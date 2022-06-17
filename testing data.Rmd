@@ -1,0 +1,130 @@
+---
+title: "Example template MASDER"
+author: "Cody Leporini"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::downcute:
+    self_contained: true
+    default_style: "dark"
+    downcute_theme: "default"
+---
+
+```{r setup, include=FALSE}
+## Global options
+knitr::opts_chunk$set(cache = TRUE, echo = FALSE, results = FALSE, error = FALSE , message = FALSE)
+library(tidyverse)
+```
+
+# Hello welcome to the template page!
+
+This is where we will work on making a template and trying some new ideas with the MASDER project. If there are any ideas let me know. The Github link is [here](https://github.com/SDSattitudes/Internal-Notes). There are a couple things the team is working on but this portion of the project is focusing on the reports. We want to make them easy to read and understand so people of all ages and backgrounds can read them.
+
+## Questions for MASDER
+
+-   What do all the variables link to? (GBeliefs, Attain_1 and so on)
+-   When we are looking at the variables what are the best things we want to show first
+-   Can we put a space in between the language values
+-   what research questions do we want to answer
+-   Where is the code book for the variables
+-   equity gaps and ethincity
+
+## Here is the start of the project
+
+First lets read in the data so that way we can see what we are working with. We specifically will look at the pilot 3 data that has been de-identified so that way people can see what we are doing. Along with this the data has been cleaned for the most part but we want to be making reports for all datasets. This means if there are NA's then we want to clear them and make sure that the data will work and graphs will show.
+
+```{r, reading the data in}
+data = read_csv("data/pilot3fromdrive.csv") #reading in the data and calling it data
+```
+
+```{r, looking at the top row to see the variables}
+head(data,1)
+```
+
+Lets go ahead and filter out some of the data that we want to see. For example I wanted to take a look at peopel who are hispanic in the data set. Then from there I wanted to make sure they all consented to the survey. After that i wanted to count and display the amount of people who spoke each of the different languages.
+
+```{r}
+# data %>%
+#   drop_na() %>% 
+#   filter(str_detect(Hispanic_Latino_Spanish, 'Yes,')) %>% 
+#   filter(str_detect(Consent, 'Yes')) -> rtadata
+# data %>%
+#   drop_na(Language) %>% 
+#   count(Language) -> languagedata
+# data %>%  
+#   select(Gender,Language) -> test 
+
+```
+
+
+## Lets take a look at some summary statistics
+
+First we should think about what some of the important summary statistics are. I personally felt like getting all of the averages and SD's for the scores would be important. So i started with those.
+
+```{r,summary statistics}
+data %>% 
+  select(-contains("Gutt_")) %>% 
+  select(-contains("TEXT")) %>% 
+  rename(Id = "...1") %>% 
+  glimpse()-> cleandata
+
+summary(cleandata) #this gives us a very broad look at the data summary
+xlimitmax = max(cleandata$Age, na.rm = TRUE)
+xlimitmin = min(cleandata$Age, na.rm = TRUE)
+#lets focus on age 
+cleandata %>%  
+  select(Age, Gender) %>% 
+  summarise(Average_age = mean(Age, na.rm = TRUE), 
+            Standard_deviation_age  = sd(Age,na.rm = TRUE))
+cleandata %>%  
+  ggplot()+ 
+  aes(x = Age)+ 
+  geom_histogram(binwidth = .5) + 
+  xlim(xlimitmin,xlimitmax)+
+  theme_bw()
+  
+mean(cleandata$Age, na.rm = TRUE)
+```
+
+
+## This is taking a look at the languages
+
+Lets take a quick look at the languages that are being spoken
+
+```{r}
+# languagedata %>%
+#   ggplot(aes(x = Language , y = n)) + 
+#   geom_col()+
+#   scale_x_discrete(labels = function(x) str_wrap(x, width = 1)) +
+#   theme(axis.text.x = element_text(angle = 45, vjust = .65, size = 10) )
+```
+
+```{r, ggplot1}
+# ggplot(data =  rtadata) + 
+#   aes(y = Attain_1 , x = Language, color = Gender, fill = Gender) + 
+#   geom_col(position = "dodge") + 
+#   labs( x =  "" , y = "" , title = "" , subtitle = "" , caption = "Made by Cody Leporini (MASDER)")+ 
+#   facet_wrap(vars(GBeliefs_1) ) +
+#   scale_x_discrete(labels = function(x) str_wrap(x, width = 1)) +
+#   theme(axis.text.x = element_text(angle = 45, vjust = .75, size = 12) )
+```
+
+## Lets make a classroom sample set
+
+In order to make a comparison for examples, we want to take the rows from the population and then pull them out to show the comparison. From here we want to be able to make a sampleset for us to bring up for comparisons for later. For example we might have a population, and to show where they lie we want to compare them. An example is found [here](images/comparison%20image.png)
+
+![](images/comparison%20image.png){ width=50% }
+
+```{r, lets make a classroom sample }
+length(data) #this gives us the amount of variables
+size = count(data) #this gives us the amount of sample size of the dataset (population)
+samplesize = 50 # this sets the amount of the sample  size we want to dsiplay (class size)
+datasamp = sample(0:as.numeric(size[1,1]), samplesize) # this lets us make a SRS starting from 0 to the size of the population
+#then this creates the random numbers within the limit and generates the amount of rows from the population that is set to be the class room size
+
+datasamp # this prints the numbers that are in a vector
+
+sampleset = data[datasamp,] # this creates our classroom sample size for comparison 
+
+```
+
+## What do we want to see
